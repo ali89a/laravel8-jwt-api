@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+    }
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -38,15 +44,28 @@ class AuthController extends Controller
         return send_response('Registration Successful.', $data, Response::HTTP_CREATED);
     }
 
-    public function login(Request $request)
+//    public function login(Request $request)
+//    {
+//        $credentials = $request->only('email', 'password');
+//
+//        if ($token = $this->guard()->attempt($credentials)) {
+//            return $this->respondWithToken($token);
+//        }
+//
+//        return response()->json(['error' => 'Unauthorized'], 401);
+//    }
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->only('email', 'password');
-
-        if ($token = $this->guard()->attempt($credentials)) {
-            return $this->respondWithToken($token);
+        try {
+            if ($token = $this->guard()->attempt($request->validated())) {
+                return $this->respondWithToken($token);
+            }
+            return response()->errorResponse('Invalid email or password', 401);
+        } catch (Exception $exception) {
+            Log::info($exception->getMessage());
+            return response()->errorResponse();
         }
 
-        return response()->json(['error' => 'Unauthorized'], 401);
     }
 
     public function profile(Request $request)
@@ -89,11 +108,18 @@ class AuthController extends Controller
      */
     protected function respondWithToken($token)
     {
-        return response()->json([
+//        return response()->json([
+//            'access_token' => $token,
+//            'token_type' => 'bearer',
+//            'expires_in' => $this->guard()->factory()->getTTL() * 60
+//        ]);
+        $data = [
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => $this->guard()->factory()->getTTL() * 60
-        ]);
+            'expires_in' => $this->guard()->factory()->getTTL() * 60,
+            'user' => $this->guard()->user()
+        ];
+        return response()->successResponse('Login successful', $data);
     }
 
     /**
