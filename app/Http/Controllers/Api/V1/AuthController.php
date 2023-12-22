@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\LoginRequest;
+use App\Http\Requests\Api\V1\RegisterRequest;
+use App\Http\Resources\V1\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -18,31 +21,48 @@ class AuthController extends Controller
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|confirmed|min:8',
-        ]);
-        if ($validator->fails()) {
-            return send_error('Validation Error', $validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+        try {
+            $data = $request->only(['name', 'email']);
+            $data['password'] = bcrypt($request->password);
+            $user = User::create($data);
+            $data = [
+                'userData' => new UserResource($user)
+            ];
+            return response()->successResponse($data, 'Registration successful', 201);
+        } catch (Exception $exception) {
+            Log::info($exception->getMessage());
+            return response()->errorResponse();
         }
-        $request['password'] = Hash::make($request['password']);
-        $user = User::create([
-            'name' => $request['name'],
-            'email' => $request['email'],
-            'password' => $request['password'],
-        ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-        $data = [
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'userData' => $user,
-        ];
-        return send_response('Registration Successful.', $data, Response::HTTP_CREATED);
     }
+
+//    public function register(Request $request)
+//    {
+//        $validator = Validator::make($request->all(), [
+//            'name' => 'required|string|max:255',
+//            'email' => 'required|string|email|max:255|unique:users',
+//            'password' => 'required|confirmed|min:8',
+//        ]);
+//        if ($validator->fails()) {
+//            return send_error('Validation Error', $validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+//        }
+//        $request['password'] = Hash::make($request['password']);
+//        $user = User::create([
+//            'name' => $request['name'],
+//            'email' => $request['email'],
+//            'password' => $request['password'],
+//        ]);
+//
+//        $token = $user->createToken('auth_token')->plainTextToken;
+//        $data = [
+//            'access_token' => $token,
+//            'token_type' => 'Bearer',
+//            'userData' => $user,
+//        ];
+//        return send_response('Registration Successful.', $data, Response::HTTP_CREATED);
+//    }
 
 //    public function login(Request $request)
 //    {
@@ -57,7 +77,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         try {
-            if ($token = $this->guard()->attempt($request->validated())) {
+            if ($token = JWTAuth::attempt($request->validated())) {
                 return $this->respondWithToken($token);
             }
             return response()->errorResponse('Invalid email or password', 401);
@@ -68,25 +88,23 @@ class AuthController extends Controller
 
     }
 
-    public function profile(Request $request)
+    public function profile()
     {
         $data = [
-            'userData' => $request->user()
+            'userData' => auth()->user()
         ];
         return send_response('User Retrieved SuccessFul.', $data, Response::HTTP_FOUND);
     }
 
     public function logout(Request $request)
     {
-        $user = request()->user(); //or Auth::user()
-
-        // Revoke current user token
-        $data = [
-            'userData' => $request->user()
-        ];
-        $request->user()->tokens()->delete();
-
-        return send_response('Logged Out Successful.', $data, Response::HTTP_FOUND);
+        try {
+            auth()->logout();
+            return response()->successResponse([], 'Logout successful', 200);
+        } catch (Exception $exception) {
+            Log::info($exception->getMessage());
+            return response()->errorResponse();
+        }
     }
 
     /**
@@ -117,9 +135,9 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => $this->guard()->factory()->getTTL() * 60,
-            'user' => $this->guard()->user()
+            'userData' => JWTAuth::user()
         ];
-        return response()->successResponse('Login successful', $data);
+        return response()->successResponse($data, 'Login successful');
     }
 
     /**
