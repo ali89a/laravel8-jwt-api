@@ -2,24 +2,25 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Number;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
-class DummyUser extends Command
+class NumberGenerate extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'user:dummy';
+    protected $signature = 'number:generate';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Dummy User Create';
+    protected $description = 'Dummy Number Generate';
 
     /**
      * Create a new command instance.
@@ -38,6 +39,10 @@ class DummyUser extends Command
      */
     public function handle()
     {
-        Log::info('Dummy User Created Schedule');
+
+        Number::create([
+            'number' => rand(1000, 9999),
+        ]);
+        Log::info('Random Number Generate Successful..............');
     }
 }

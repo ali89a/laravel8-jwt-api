@@ -17,8 +17,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->command('user:dummy')->everyMinute();
-        $schedule->job(new RegisterUserEmailJob())->everyFiveMinutes();
+        $schedule->command('number:generate')->everyMinute();
     }
 
     /**
