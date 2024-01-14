@@ -39,10 +39,10 @@ class NumberGenerate extends Command
      */
     public function handle()
     {
+        $number = new Number();
+        $number->number = rand(1000, 9999);
+        $number->save();
 
-        Number::create([
-            'number' => rand(1000, 9999),
-        ]);
         Log::info('Random Number Generate Successful..............');
     }
 }
