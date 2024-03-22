@@ -78,6 +78,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        return 8;
         $user = request()->user(); //or Auth::user()
 
         // Revoke current user token
