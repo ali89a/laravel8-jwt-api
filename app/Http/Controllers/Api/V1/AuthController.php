@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -78,16 +79,13 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        return 8;
-        $user = request()->user(); //or Auth::user()
-
-        // Revoke current user token
-        $data = [
-            'userData' => $request->user()
-        ];
-        $request->user()->tokens()->delete();
-
-        return send_response('Logged Out Successful.', $data, Response::HTTP_FOUND);
+        try{
+            auth()->logout();
+            return response()->successResponse( 'Logout successful', [],200);
+        }catch(Exception $exception){
+            Log::info($exception->getMessage());
+            return response()->errorResponse();
+        }
     }
 
     /**
@@ -97,7 +95,13 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->respondWithToken($this->guard()->refresh());
+        try{
+            auth()->refresh();
+            return response()->successResponse( 'New Access Token generated',[], 200);
+        }catch(Exception $exception){
+            Log::info($exception->getMessage());
+            return response()->errorResponse();
+        }
     }
 
     /**

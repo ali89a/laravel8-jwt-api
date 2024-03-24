@@ -18,7 +18,7 @@ class CreateCategoriesTable extends Migration
             $table->string('name');
             $table->string('slug')->unique()->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('parent_id')->references('id')->on('categories')->onDelete('cascade');
+            $table->foreignId('parent_id')->nullable()->references('id')->on('categories')->onDelete('cascade');
             $table->foreignId('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->foreignId('updated_by')->references('id')->on('users')->onDelete('cascade');
             $table->softDeletes();

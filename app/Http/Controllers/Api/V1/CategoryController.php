@@ -7,23 +7,38 @@ use App\Http\Requests\Api\V1\StoreCategoryRequest;
 use App\Http\Requests\Api\V1\UpdateCategoryRequest;
 use App\Http\Resources\V1\CategoryResource;
 use App\Models\Category;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    public function __construct()
+    {
+//        $this->middleware('auth:api');
+        $this->middleware('jwt.verify');
+
+    }
+
     public function index()
     {
-        $data = [
-            'category' => CategoryResource::collection(Category::latest()->get())
-        ];
-        return send_response('Category Retrieved SuccessFul.', $data, Response::HTTP_FOUND);
+
+
+        try {
+            $categories = Category::latest()->get();
+            if (count($categories)>0) {
+                return response()->successResponse('Category retrieved Successfully', CategoryResource::collection($categories), Response::HTTP_FOUND);
+            } else {
+                return response()->notFoundResponse();
+            }
+
+        } catch (Exception $exception) {
+            Log::info($exception->getMessage());
+            return response()->errorResponse();
+        }
     }
 
     /**
@@ -103,7 +118,7 @@ class CategoryController extends Controller
             $data = [
                 'category' => new CategoryResource($category)
             ];
-            return response()->successResponse('Category Updated SuccessFul.', $data, Response::HTTP_CREATED);
+            return response()->successResponse('Category updated successfully', $data, Response::HTTP_CREATED);
         } catch (\Exception $exception) {
             Log::info($exception->getMessage());
             saveApiErrorLog('error', $exception);

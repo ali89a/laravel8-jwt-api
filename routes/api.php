@@ -30,6 +30,7 @@ Route::group(['prefix' => 'v1/user', 'as' => 'user.'], function () {
         Route::get('/profile', [AuthController::class, 'profile']);
         Route::apiResource('categories', CategoryController::class);
         Route::apiResource('blogs', BlogController::class);
+        Route::get('/refresh', [AuthController::class, 'refresh']);
         Route::post('/logout', [AuthController::class, 'logout']);
     });
 

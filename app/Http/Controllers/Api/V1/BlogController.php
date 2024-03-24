@@ -23,7 +23,7 @@ class BlogController extends Controller
         $data = [
             'blogs' => BlogResource::collection(Blog::latest()->get())
         ];
-        return send_response('Blog Retrieved SuccessFul.', $data, Response::HTTP_FOUND);
+        return response()->successResponse('Blog Retrieved SuccessFul.', $data, Response::HTTP_FOUND);
     }
 
     /**
