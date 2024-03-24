@@ -13,7 +13,7 @@ class StoreBlogRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,26 @@ class StoreBlogRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'title' => ['required'],
+            'description' => ['required'],
+            'img_url' => ['nullable'],
+            'created_by' => ['required'],
+        ];
+
+    }
+
+    public function prepareForValidation()
+    {
+
+        $this->merge([
+            'created_by' => authUser(true),
+        ]);
+    }
+
+    public function messages()
+    {
+        return [
+            'title.required' => 'Title Cannot be Empty',
         ];
     }
 }

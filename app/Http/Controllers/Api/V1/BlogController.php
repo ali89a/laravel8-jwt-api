@@ -45,7 +45,7 @@ class BlogController extends Controller
     public function store(StoreBlogRequest $request)
     {
         try {
-            $validated = $request->validated();
+           return $validated = $request->validated();
             $blog= Blog::create($validated);
             $data = [
                 'blog' => new BlogResource($blog)

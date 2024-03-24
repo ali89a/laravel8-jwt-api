@@ -39,6 +39,10 @@ class CategoryController extends Controller
             Log::info($exception->getMessage());
             return response()->errorResponse();
         }
+        $data = [
+            'categories' => CategoryResource::collection(Category::latest()->get())
+        ];
+        return send_response('Category Retrieved SuccessFul.', $data, Response::HTTP_FOUND);
     }
 
     /**
@@ -65,7 +69,7 @@ class CategoryController extends Controller
             $data = [
                 'category' => new CategoryResource($category)
             ];
-            return response()->successResponse('Category Created SuccessFul.', $data, Response::HTTP_CREATED);
+            return response()->successResponse($data,'Category Created SuccessFul.', Response::HTTP_CREATED);
         } catch (\Exception $exception) {
             saveApiErrorLog('error', $exception);
             Log::info($exception->getMessage());
