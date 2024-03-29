@@ -9,6 +9,7 @@ use App\Http\Resources\V1\UserResource;
 use App\Jobs\RegisterUserEmailJob;
 use App\Models\User;
 use App\Notifications\RegisterNotification;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -26,62 +27,21 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        try {
+        try{
             $data = $request->only(['name', 'email']);
             $data['password'] = bcrypt($request->password);
             $user = User::create($data);
-            dispatch(new RegisterUserEmailJob($user));
-            $data = [
-                'userData' => new UserResource($user)
-            ];
-            return response()->successResponse($data, 'Registration successful', 201);
-        } catch (Exception $exception) {
+            return response()->successResponse('Registration successful',new UserResource($user),  201);
+        }catch(Exception $exception){
             Log::info($exception->getMessage());
             return response()->errorResponse();
         }
-
     }
 
-//    public function register(Request $request)
-//    {
-//        $validator = Validator::make($request->all(), [
-//            'name' => 'required|string|max:255',
-//            'email' => 'required|string|email|max:255|unique:users',
-//            'password' => 'required|confirmed|min:8',
-//        ]);
-//        if ($validator->fails()) {
-//            return send_error('Validation Error', $validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
-//        }
-//        $request['password'] = Hash::make($request['password']);
-//        $user = User::create([
-//            'name' => $request['name'],
-//            'email' => $request['email'],
-//            'password' => $request['password'],
-//        ]);
-//
-//        $token = $user->createToken('auth_token')->plainTextToken;
-//        $data = [
-//            'access_token' => $token,
-//            'token_type' => 'Bearer',
-//            'userData' => $user,
-//        ];
-//        return send_response('Registration Successful.', $data, Response::HTTP_CREATED);
-//    }
-
-//    public function login(Request $request)
-//    {
-//        $credentials = $request->only('email', 'password');
-//
-//        if ($token = $this->guard()->attempt($credentials)) {
-//            return $this->respondWithToken($token);
-//        }
-//
-//        return response()->json(['error' => 'Unauthorized'], 401);
-//    }
     public function login(LoginRequest $request)
     {
         try {
-            if ($token = JWTAuth::attempt($request->validated())) {
+            if ($token = $this->guard()->attempt($request->validated())) {
                 return $this->respondWithToken($token);
             }
             return response()->errorResponse('Invalid email or password', 401);
@@ -92,20 +52,20 @@ class AuthController extends Controller
 
     }
 
-    public function profile()
+    public function profile(Request $request)
     {
         $data = [
-            'userData' => auth()->user()
+            'userData' => $request->user()
         ];
         return send_response('User Retrieved SuccessFul.', $data, Response::HTTP_FOUND);
     }
 
     public function logout(Request $request)
     {
-        try {
+        try{
             auth()->logout();
-            return response()->successResponse([], 'Logout successful', 200);
-        } catch (Exception $exception) {
+            return response()->successResponse( 'Logout successful', [],200);
+        }catch(Exception $exception){
             Log::info($exception->getMessage());
             return response()->errorResponse();
         }
@@ -118,7 +78,19 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->respondWithToken($this->guard()->refresh());
+        try{
+            $token=auth()->refresh();
+            $data = [
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => $this->guard()->factory()->getTTL() * 60,
+                'user' => auth()->user()
+            ];
+            return response()->successResponse( 'New Access Token generated',$data, 200);
+        }catch(Exception $exception){
+            Log::info($exception->getMessage());
+            return response()->errorResponse();
+        }
     }
 
     /**
@@ -139,9 +111,9 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => $this->guard()->factory()->getTTL() * 60,
-            'userData' => JWTAuth::user()
+            'user' => $this->guard()->user()
         ];
-        return response()->successResponse($data, 'Login successful');
+        return response()->successResponse('Login successful', $data);
     }
 
     /**

@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
+
 function send_error($message, $errors = [], $code = 404)
 {
     $response = [

@@ -21,33 +21,31 @@ class ResponseServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Response::macro('successResponse', function ($data, $message, $code=200) {
+        Response::macro('successResponse', function ($message, $data, $code = 200) {
             return \response()->json([
-                'success'=>true,
-                'message'=>$message,
-                'data'=>$data
+                'success' => true,
+                'message' => $message,
+                'data' => $data
             ], $code);
         });
 
-        Response::macro('errorResponse', function ($message='Opps! something went wrong', $code=500) {
+        Response::macro('errorResponse', function ($message = 'Opps! something went wrong', $code = 500) {
             return \response()->json([
-                'success'=>false,
-                'message'=>$message,
+                'success' => false,
+                'message' => $message,
             ], $code);
         });
-
-        Response::macro('notFoundResponse', function ($message='Info not found', $code=404) {
+        Response::macro('notFoundResponse', function ($message = 'Info not found', $code = 404) {
             return \response()->json([
-                'success'=>false,
-                'message'=>$message,
+                'success' => false,
+                'message' => $message,
                 'data' => []
             ], $code);
         });
-
         Response::macro('sendValidationErrorResponse', function ($errors) {
             throw new HttpResponseException(\response()->json([
                 'success' => false,
-                'message' => 'Validation errors',
+                'message' => 'Ops! Some errors occurred',
                 'errors' => $errors
             ], 422));
         });
