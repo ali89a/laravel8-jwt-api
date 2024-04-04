@@ -21,7 +21,7 @@ class ResponseServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Response::macro('successResponse', function ($message, $data, $code = 200) {
+        Response::macro('successResponse', function ($data, $message, $code = 200) {
             return \response()->json([
                 'success' => true,
                 'message' => $message,

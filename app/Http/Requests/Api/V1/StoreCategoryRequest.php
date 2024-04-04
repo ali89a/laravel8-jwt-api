@@ -27,6 +27,7 @@ class StoreCategoryRequest extends FormRequest
             'name' => ['required'],
             'parent_id' => ['nullable'],
             'created_by' => ['required'],
+            'updated_by' => ['required'],
         ];
 
     }
@@ -35,6 +36,7 @@ class StoreCategoryRequest extends FormRequest
 
         $this->merge([
             'created_by' => authUser(true),
+            'updated_by' => authUser(true),
         ]);
     }
     public function messages()

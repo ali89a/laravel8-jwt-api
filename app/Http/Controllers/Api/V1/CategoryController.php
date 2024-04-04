@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\UpdateCategoryRequest;
 use App\Http\Resources\V1\CategoryResource;
 use App\Models\Category;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -25,12 +26,10 @@ class CategoryController extends Controller
 
     public function index()
     {
-
-
         try {
             $categories = Category::latest()->get();
-            if (count($categories)>0) {
-                return response()->successResponse('Category retrieved Successfully', CategoryResource::collection($categories), Response::HTTP_FOUND);
+            if (count($categories) > 0) {
+                return response()->successResponse(CategoryResource::collection($categories), 'Category retrieved Successfully', Response::HTTP_FOUND);
             } else {
                 return response()->notFoundResponse();
             }
@@ -39,10 +38,6 @@ class CategoryController extends Controller
             Log::info($exception->getMessage());
             return response()->errorResponse();
         }
-        $data = [
-            'categories' => CategoryResource::collection(Category::latest()->get())
-        ];
-        return send_response('Category Retrieved SuccessFul.', $data, Response::HTTP_FOUND);
     }
 
     /**
@@ -64,12 +59,13 @@ class CategoryController extends Controller
     public function store(StoreCategoryRequest $request)
     {
         try {
+
             $validated = $request->validated();
             $category = Category::create($validated);
             $data = [
                 'category' => new CategoryResource($category)
             ];
-            return response()->successResponse($data,'Category Created SuccessFul.', Response::HTTP_CREATED);
+            return response()->successResponse($data, 'Category Created SuccessFul.', Response::HTTP_CREATED);
         } catch (\Exception $exception) {
             saveApiErrorLog('error', $exception);
             Log::info($exception->getMessage());
@@ -91,9 +87,9 @@ class CategoryController extends Controller
             $data = [
                 'category' => new CategoryResource($category)
             ];
-            return send_response('Category Retrieved SuccessFul.', $data, Response::HTTP_FOUND);
+            return response()->successResponse($data, 'Category Retrieved SuccessFul.', Response::HTTP_FOUND);
         }
-        return send_error('Category Not Found!', null, Response::HTTP_NOT_FOUND);
+        return response()->errorResponse();
     }
 
     /**
@@ -122,7 +118,7 @@ class CategoryController extends Controller
             $data = [
                 'category' => new CategoryResource($category)
             ];
-            return response()->successResponse('Category updated successfully', $data, Response::HTTP_CREATED);
+            return response()->successResponse($data,'Category updated successfully',  Response::HTTP_CREATED);
         } catch (\Exception $exception) {
             Log::info($exception->getMessage());
             saveApiErrorLog('error', $exception);

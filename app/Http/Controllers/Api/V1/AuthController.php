@@ -31,7 +31,7 @@ class AuthController extends Controller
             $data = $request->only(['name', 'email']);
             $data['password'] = bcrypt($request->password);
             $user = User::create($data);
-            return response()->successResponse('Registration successful',new UserResource($user),  201);
+            return response()->successResponse(new UserResource($user),'Registration successful',  201);
         }catch(Exception $exception){
             Log::info($exception->getMessage());
             return response()->errorResponse();
@@ -64,7 +64,7 @@ class AuthController extends Controller
     {
         try{
             auth()->logout();
-            return response()->successResponse( 'Logout successful', [],200);
+            return response()->successResponse( [],'Logout successful',200);
         }catch(Exception $exception){
             Log::info($exception->getMessage());
             return response()->errorResponse();
@@ -86,7 +86,7 @@ class AuthController extends Controller
                 'expires_in' => $this->guard()->factory()->getTTL() * 60,
                 'user' => auth()->user()
             ];
-            return response()->successResponse( 'New Access Token generated',$data, 200);
+            return response()->successResponse( $data,'New Access Token generated', 200);
         }catch(Exception $exception){
             Log::info($exception->getMessage());
             return response()->errorResponse();
@@ -113,7 +113,7 @@ class AuthController extends Controller
             'expires_in' => $this->guard()->factory()->getTTL() * 60,
             'user' => $this->guard()->user()
         ];
-        return response()->successResponse('Login successful', $data);
+        return response()->successResponse($data,'Login successful');
     }
 
     /**
