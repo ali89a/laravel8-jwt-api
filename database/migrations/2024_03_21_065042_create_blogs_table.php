@@ -19,7 +19,7 @@ class CreateBlogsTable extends Migration
             $table->string('slug')->unique()->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('img_url')->nullable();
-            $table->longText('description')->nullable();
+            $table->longText('description');
             $table->foreignId('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->foreignId('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->foreignId('updated_by')->references('id')->on('users')->onDelete('cascade');
