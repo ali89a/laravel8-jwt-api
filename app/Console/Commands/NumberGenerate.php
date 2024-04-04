@@ -43,6 +43,6 @@ class NumberGenerate extends Command
         $number->number = rand(1000, 9999);
         $number->save();
 
-        Log::info('Random Number Generate Successful..............');
+        Log::info('Random Number Generated Successful..............');
     }
 }
