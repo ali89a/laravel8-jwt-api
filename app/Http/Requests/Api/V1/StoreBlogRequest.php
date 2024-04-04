@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -43,7 +44,10 @@ class StoreBlogRequest extends FormRequest
             'updated_by' => authUser(true),
         ]);
     }
-
+    protected function failedValidation(Validator $validator)
+    {
+        response()->sendValidationErrorResponse($validator->errors());
+    }
     public function messages()
     {
         return [

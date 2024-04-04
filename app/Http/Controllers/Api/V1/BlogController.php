@@ -66,18 +66,17 @@ class BlogController extends Controller
      */
     public function show($id)
     {
-//        try{
+        try{
             $blog = Blog::with(['createdBy:id,name','category:id,name'])->where(['id' => $id])->first();
             if($blog){
                 return response()->successResponse(new BlogResource($blog), 'Blog details', 200);
             }else{
                 return response()->notFoundResponse();
             }
-
-//        }catch(Exception $exception){
-//            Log::info($exception->getMessage());
-//            return response()->errorResponse();
-//        }
+        }catch(Exception $exception){
+            Log::info($exception->getMessage());
+            return response()->errorResponse();
+        }
     }
 
     /**
@@ -98,9 +97,19 @@ class BlogController extends Controller
      * @param \App\Models\Blog $blog
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateBlogRequest $request, Blog $blog)
+    public function update(UpdateBlogRequest $request,$id)
     {
-        //
+
+//        try{
+          $blog = Blog::findOrFail($id);
+            $data = $request->validated();
+         $blog->update($data);
+         return $blog;
+            return response()->successResponse(new BlogResource($blog), 'Blog updated successfully', 201);
+//        }catch(Exception $exception){
+//            Log::info($exception->getMessage());
+//            return response()->errorResponse();
+//        }
     }
 
     /**
